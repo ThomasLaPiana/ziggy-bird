@@ -2,6 +2,27 @@
 
 const rl = @import("raylib");
 
+const Obstacle = struct {
+    position: rl.Vector2,
+    size: rl.Vector2,
+};
+
+// Get a pair of obstacles with a gap in the middle
+pub fn get_obstacle_pair(screenWidth: f32, screenHeight: f32) struct { Obstacle, Obstacle } {
+    const gap = 200;
+    // Create the obstacle at the top of the screen
+    const obstaclePosition = rl.Vector2.init(screenWidth, 0);
+    const obstacleSize = rl.Vector2.init(20, screenHeight / 2);
+    const obstacle = Obstacle{ .position = obstaclePosition, .size = obstacleSize };
+
+    // Set the obstacle on the bottom of the screen
+    const obstaclePosition2 = rl.Vector2.init(screenWidth, screenHeight - gap);
+    const obstacleSize2 = rl.Vector2.init(20, screenHeight / 2);
+    const obstacle2 = Obstacle{ .position = obstaclePosition2, .size = obstacleSize2 };
+
+    return .{ obstacle, obstacle2 };
+}
+
 pub fn main() anyerror!void {
     // Initialization
     //--------------------------------------------------------------------------------------
@@ -12,8 +33,9 @@ pub fn main() anyerror!void {
     defer rl.closeWindow();
 
     var birdPosition = rl.Vector2.init(screenWidth / 2, screenHeight / 2);
-    var obstaclePosition = rl.Vector2.init(10.0, 10.0);
-    const obstacleSize = rl.Vector2.init(20.0, 100.0);
+
+    // Get a pair of obstacles with a gap in the middle
+    var obstacles = get_obstacle_pair(screenWidth, screenHeight);
 
     var camera = rl.Camera2D{
         .target = rl.Vector2.init(birdPosition.x + 20, birdPosition.y + 20),
@@ -37,7 +59,8 @@ pub fn main() anyerror!void {
         birdPosition.x += 1;
 
         // Move the Columns
-        obstaclePosition.x += 1;
+        obstacles[0].position.x -= 1;
+        obstacles[1].position.x -= 1;
 
         camera.target = rl.Vector2.init(birdPosition.x + 20, screenHeight / 2);
 
@@ -59,7 +82,10 @@ pub fn main() anyerror!void {
             defer camera.end();
 
             rl.drawCircleV(birdPosition, 50, rl.Color.maroon);
-            rl.drawRectangleV(obstaclePosition, obstacleSize, rl.Color.dark_blue);
+
+            // Draw the obstacles
+            rl.drawRectangleV(obstacles[0].position, obstacles[0].size, rl.Color.dark_blue);
+            rl.drawRectangleV(obstacles[1].position, obstacles[1].size, rl.Color.gray);
         }
 
         rl.drawText("Flap with 'k'", 10, 10, 20, rl.Color.dark_gray);
