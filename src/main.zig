@@ -1,32 +1,6 @@
-// Ziggy Bird
-
+/// Ziggy Bird
+const obs = @import("obstacles.zig");
 const rl = @import("raylib");
-
-const Obstacle = struct {
-    position: rl.Vector2,
-    size: rl.Vector2,
-};
-
-const ObstaclePair = struct {
-    top: Obstacle,
-    bottom: Obstacle,
-};
-
-// Get a pair of obstacles with a gap in the middle
-pub fn get_obstacle_pair(screenWidth: f32, screenHeight: f32) ObstaclePair {
-    const gap = 200;
-    // Create the obstacle at the top of the screen
-    const obstaclePosition = rl.Vector2.init(screenWidth, 0);
-    const obstacleSize = rl.Vector2.init(20, screenHeight / 2);
-    const obstacle = Obstacle{ .position = obstaclePosition, .size = obstacleSize };
-
-    // Set the obstacle on the bottom of the screen
-    const obstaclePosition2 = rl.Vector2.init(screenWidth, screenHeight - gap);
-    const obstacleSize2 = rl.Vector2.init(20, screenHeight / 2);
-    const obstacle2 = Obstacle{ .position = obstaclePosition2, .size = obstacleSize2 };
-
-    return ObstaclePair{ .top = obstacle, .bottom = obstacle2 };
-}
 
 pub fn main() anyerror!void {
     // Initialization
@@ -40,7 +14,8 @@ pub fn main() anyerror!void {
     var birdPosition = rl.Vector2.init(screenWidth / 2, screenHeight / 2);
 
     // Get a pair of obstacles with a gap in the middle
-    var obstacles = get_obstacle_pair(screenWidth, screenHeight);
+    const init_pair = obs.get_obstacle_pair(screenWidth, screenHeight);
+    const obstacles = [_]obs.ObstaclePair{init_pair};
 
     var camera = rl.Camera2D{
         .target = rl.Vector2.init(birdPosition.x + 20, birdPosition.y + 20),
@@ -64,8 +39,15 @@ pub fn main() anyerror!void {
         birdPosition.x += 1;
 
         // Move the Columns
-        obstacles.top.position.x -= 1;
-        obstacles.bottom.position.x -= 1;
+        for (&obstacles) |*pair| {
+            var top = pair.top;
+            top.position.x -= 1;
+
+            var bottom = pair.bottom;
+            bottom.position.x -= 1;
+
+            pair.* = obs.ObstaclePair{ .top = top, .bottom = bottom };
+        }
 
         camera.target = rl.Vector2.init(birdPosition.x + 20, screenHeight / 2);
 
