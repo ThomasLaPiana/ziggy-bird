@@ -15,7 +15,7 @@ pub fn main() anyerror!void {
 
     // Get a pair of obstacles with a gap in the middle
     const init_pair = obs.get_obstacle_pair(screenWidth, screenHeight);
-    const obstacles = [_]obs.ObstaclePair{init_pair};
+    var obstacles = [1]obs.ObstaclePair{init_pair};
 
     var camera = rl.Camera2D{
         .target = rl.Vector2.init(birdPosition.x + 20, birdPosition.y + 20),
@@ -40,13 +40,7 @@ pub fn main() anyerror!void {
 
         // Move the Columns
         for (&obstacles) |*pair| {
-            var top = pair.top;
-            top.position.x -= 1;
-
-            var bottom = pair.bottom;
-            bottom.position.x -= 1;
-
-            pair.* = obs.ObstaclePair{ .top = top, .bottom = bottom };
+            pair.move_left(1);
         }
 
         camera.target = rl.Vector2.init(birdPosition.x + 20, screenHeight / 2);
@@ -71,8 +65,10 @@ pub fn main() anyerror!void {
             rl.drawCircleV(birdPosition, 50, rl.Color.maroon);
 
             // Draw the obstacles
-            rl.drawRectangleV(obstacles.top.position, obstacles.top.size, rl.Color.dark_blue);
-            rl.drawRectangleV(obstacles.bottom.position, obstacles.bottom.size, rl.Color.gray);
+            for (obstacles) |pair| {
+                rl.drawRectangleV(pair.top.position, pair.top.size, rl.Color.dark_blue);
+                rl.drawRectangleV(pair.bottom.position, pair.bottom.size, rl.Color.gray);
+            }
         }
 
         rl.drawText("Flap with 'k'", 10, 10, 20, rl.Color.dark_gray);

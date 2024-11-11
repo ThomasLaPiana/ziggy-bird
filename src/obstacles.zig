@@ -7,7 +7,7 @@ pub const Obstacle = struct {
     size: rl.Vector2,
 
     // Move the obstacle to the left by a certain amount
-    pub fn move_left(self: *Obstacle, amount: f32) !void {
+    pub fn move_left(self: *Obstacle, amount: f32) void {
         self.position.x -= amount;
     }
 };
@@ -16,6 +16,11 @@ pub const Obstacle = struct {
 pub const ObstaclePair = struct {
     top: Obstacle,
     bottom: Obstacle,
+
+    pub fn move_left(self: *ObstaclePair, amount: f32) void {
+        self.top.move_left(amount);
+        self.bottom.move_left(amount);
+    }
 };
 
 // Get a pair of obstacles with a gap in the middle
