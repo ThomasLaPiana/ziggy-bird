@@ -36,6 +36,7 @@ pub fn run_game() bool {
     };
 
     var score: i32 = 0;
+    var elapsedTime: f64 = 0.0;
 
     // Frames win games
     rl.setTargetFPS(fps);
@@ -98,6 +99,8 @@ pub fn run_game() bool {
             } else if (rl.isKeyPressed(rl.KeyboardKey.key_x)) {
                 return false;
             }
+        } else {
+            elapsedTime = rl.getTime();
         }
 
         // Draw the Score
@@ -105,7 +108,7 @@ pub fn run_game() bool {
         rl.drawText(scoreText, 10, 10, 20, rl.Color.dark_gray);
 
         // Draw the Time
-        const timeText = rl.textFormat("Elapsed Time: %f", .{rl.getTime()});
+        const timeText = rl.textFormat("Elapsed Time: %f", .{elapsedTime});
         rl.drawText(timeText, 10, 30, 20, rl.Color.dark_gray);
 
         // Draw the FPS
