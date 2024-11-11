@@ -3,15 +3,17 @@ const std = @import("std");
 const obs = @import("obstacles.zig");
 const rl = @import("raylib");
 
+// Set all of the Game constants
 const birdSize: i16 = 50;
 const fps: i32 = 60;
+const screenWidth: i32 = 1000;
+const screenHeight: i32 = 700;
+const fallRate: f32 = 1.0;
+const scrollRate: f32 = 2.0;
 
 pub fn main() anyerror!void {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const screenWidth = 1000;
-    const screenHeight = 700;
-
     rl.initWindow(screenWidth, screenHeight, "Ziggy Bird");
     defer rl.closeWindow();
 
@@ -45,11 +47,11 @@ pub fn main() anyerror!void {
         //----------------------------------------------------------------------------------
 
         // Move the Bird
-        birdPosition.y += 1;
+        birdPosition.y += fallRate;
 
         // Move the Columns
         for (&obstacles) |*pair| {
-            pair.move_left(2);
+            pair.move_left(scrollRate);
         }
 
         camera.target = rl.Vector2.init(birdPosition.x + 20, screenHeight / 2);
@@ -82,8 +84,7 @@ pub fn main() anyerror!void {
         }
         // Check if we passed an obstacle
         for (obstacles) |pair| {
-            const top: i64 = @intFromFloat(pair.top.x);
-            if (top == screenWidth / 2) {
+            if (pair.top.x == screenWidth / 2) {
                 score += 1;
             }
         }
