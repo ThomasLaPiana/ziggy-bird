@@ -1,6 +1,10 @@
 /// Ziggy Bird
+const std = @import("std");
 const obs = @import("obstacles.zig");
 const rl = @import("raylib");
+
+const birdSize: i16 = 50;
+const fps: i32 = 60;
 
 pub fn main() anyerror!void {
     // Initialization
@@ -14,8 +18,12 @@ pub fn main() anyerror!void {
     var birdPosition = rl.Vector2.init(screenWidth / 2, screenHeight / 2);
 
     // Get a pair of obstacles with a gap in the middle
-    const init_pair = obs.get_obstacle_pair(screenWidth, screenHeight);
-    var obstacles = [1]obs.ObstaclePair{init_pair};
+    const first = obs.get_obstacle_pair(screenWidth, screenHeight);
+    const second = obs.get_obstacle_pair(screenWidth + obs.obstacle_offset, screenHeight);
+    const third = obs.get_obstacle_pair(screenWidth + (obs.obstacle_offset * 2), screenHeight);
+    const fourth = obs.get_obstacle_pair(screenWidth + (obs.obstacle_offset * 3), screenHeight);
+    const fifth = obs.get_obstacle_pair(screenWidth + (obs.obstacle_offset * 4), screenHeight);
+    var obstacles = [_]obs.ObstaclePair{ first, second, third, fourth, fifth };
 
     var camera = rl.Camera2D{
         .target = rl.Vector2.init(birdPosition.x + 20, birdPosition.y + 20),
@@ -24,8 +32,10 @@ pub fn main() anyerror!void {
         .zoom = 1,
     };
 
+    var score: i32 = 0;
+
     // Frames win games
-    rl.setTargetFPS(120);
+    rl.setTargetFPS(fps);
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -36,11 +46,10 @@ pub fn main() anyerror!void {
 
         // Move the Bird
         birdPosition.y += 1;
-        birdPosition.x += 1;
 
         // Move the Columns
         for (&obstacles) |*pair| {
-            pair.move_left(1);
+            pair.move_left(2);
         }
 
         camera.target = rl.Vector2.init(birdPosition.x + 20, screenHeight / 2);
@@ -62,17 +71,25 @@ pub fn main() anyerror!void {
             camera.begin();
             defer camera.end();
 
-            rl.drawCircleV(birdPosition, 50, rl.Color.maroon);
+            // Handle the Bird
+            rl.drawCircleV(birdPosition, birdSize, rl.Color.maroon);
 
             // Draw the obstacles
             for (obstacles) |pair| {
-                rl.drawRectangleV(pair.top.position, pair.top.size, rl.Color.dark_blue);
-                rl.drawRectangleV(pair.bottom.position, pair.bottom.size, rl.Color.gray);
+                rl.drawRectangleRec(pair.top, rl.Color.dark_blue);
+                rl.drawRectangleRec(pair.bottom, rl.Color.dark_blue);
+            }
+        }
+        // Check if we passed an obstacle
+        for (obstacles) |pair| {
+            const top: i64 = @intFromFloat(pair.top.x);
+            if (top == screenWidth / 2) {
+                score += 1;
             }
         }
 
-        rl.drawText("Flap with 'k'", 10, 10, 20, rl.Color.dark_gray);
-
+        const scoreText = rl.textFormat("Score: %d", .{score});
+        rl.drawText(scoreText, 10, 10, 20, rl.Color.dark_gray);
         //----------------------------------------------------------------------------------
     }
 }

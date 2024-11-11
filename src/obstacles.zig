@@ -1,40 +1,30 @@
 /// This file contains the logic for generating and updating Obstacles.
 const rl = @import("raylib");
 
-// The struct for a single Obstacle, resembling a column
-pub const Obstacle = struct {
-    position: rl.Vector2,
-    size: rl.Vector2,
-
-    // Move the obstacle to the left by a certain amount
-    pub fn move_left(self: *Obstacle, amount: f32) void {
-        self.position.x -= amount;
-    }
-};
+pub const obstacle_offset = 300;
 
 // The struct for containing a pair of Obstacles
 pub const ObstaclePair = struct {
-    top: Obstacle,
-    bottom: Obstacle,
+    top: rl.Rectangle,
+    bottom: rl.Rectangle,
 
     pub fn move_left(self: *ObstaclePair, amount: f32) void {
-        self.top.move_left(amount);
-        self.bottom.move_left(amount);
+        self.top.x -= amount;
+        self.bottom.x -= amount;
     }
 };
 
 // Get a pair of obstacles with a gap in the middle
 pub fn get_obstacle_pair(screenWidth: f32, screenHeight: f32) ObstaclePair {
-    const gap: f32 = @floatFromInt(rl.getRandomValue(200, 100));
-    // Create the obstacle at the top of the screen
-    const obstaclePosition = rl.Vector2.init(screenWidth, 0);
-    const obstacleSize = rl.Vector2.init(20, screenHeight / 2);
-    const obstacle = Obstacle{ .position = obstaclePosition, .size = obstacleSize };
+    // Calculate the gap and heights
+    const gap_size: i32 = 100;
+    const random: f32 = @floatFromInt(rl.getRandomValue(-100, 100));
+    const gap_mid_point: f32 = screenHeight / 2 + random;
+    const gap_low_point: f32 = gap_mid_point + gap_size;
+    const gap_high_point: f32 = gap_mid_point - gap_size;
 
-    // Set the obstacle on the bottom of the screen
-    const obstaclePosition2 = rl.Vector2.init(screenWidth, screenHeight - gap);
-    const obstacleSize2 = rl.Vector2.init(20, screenHeight / 2);
-    const obstacle2 = Obstacle{ .position = obstaclePosition2, .size = obstacleSize2 };
+    const bottom = rl.Rectangle{ .x = screenWidth, .y = gap_low_point, .width = 20, .height = screenHeight };
+    const top = rl.Rectangle{ .x = screenWidth, .y = 0, .width = 20, .height = gap_high_point };
 
-    return ObstaclePair{ .top = obstacle, .bottom = obstacle2 };
+    return ObstaclePair{ .top = top, .bottom = bottom };
 }
