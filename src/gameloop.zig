@@ -14,6 +14,8 @@ const fallRate: f32 = 1.0;
 const scrollRate: f32 = 2.0;
 
 pub fn run_game() bool {
+    const allocator = std.heap.page_allocator;
+
     // Start the Game Window
     rl.initWindow(screenWidth, screenHeight, "Ziggy Bird");
     defer rl.closeWindow();
@@ -24,12 +26,8 @@ pub fn run_game() bool {
     var gameLost = false;
 
     // Create the Obstacles
-    const first = obs.get_obstacle_pair(screenWidth, screenHeight);
-    const second = obs.get_obstacle_pair(screenWidth + obs.obstacle_offset, screenHeight);
-    const third = obs.get_obstacle_pair(screenWidth + (obs.obstacle_offset * 2), screenHeight);
-    const fourth = obs.get_obstacle_pair(screenWidth + (obs.obstacle_offset * 3), screenHeight);
-    const fifth = obs.get_obstacle_pair(screenWidth + (obs.obstacle_offset * 4), screenHeight);
-    var obstacles = [_]obs.ObstaclePair{ first, second, third, fourth, fifth };
+    var obstacles = obs.Obstacles.init(screenWidth, screenHeight, allocator);
+    obstacles.add_obstacle_pair();
 
     // Create the Camera
     var camera = rl.Camera2D{
@@ -56,6 +54,16 @@ pub fn run_game() bool {
 
         rl.clearBackground(rl.Color.ray_white);
 
+        // Check if we need to add a new obstacle pair
+        if (obstacles.pairs.getLast().top.x < screenWidth - obs.obstacle_offset) {
+            obstacles.add_obstacle_pair();
+        }
+
+        // Check if we need to remove the first obstacle pair
+        if (obstacles.pairs.items[0].top.x < -20) {
+            obstacles.remove_first_obstacle_pair();
+        }
+
         // Camera Work + Drawing
         {
             camera.begin();
@@ -65,7 +73,7 @@ pub fn run_game() bool {
             rl.drawCircleV(birdPosition, birdSize, rl.Color.maroon);
 
             // Draw the obstacles
-            for (obstacles) |pair| {
+            for (obstacles.pairs.items) |pair| {
                 rl.drawRectangleRec(pair.top, rl.Color.dark_blue);
                 rl.drawRectangleRec(pair.bottom, rl.Color.dark_blue);
             }
@@ -79,7 +87,7 @@ pub fn run_game() bool {
         }
 
         // Calculate score and collisions
-        for (obstacles) |pair| {
+        for (obstacles.pairs.items) |pair| {
             const topCollision = rl.checkCollisionCircleRec(birdPosition, birdSize, pair.top);
             const bottomCollision = rl.checkCollisionCircleRec(birdPosition, birdSize, pair.bottom);
             if (topCollision or bottomCollision) {
@@ -116,18 +124,22 @@ pub fn run_game() bool {
         // Draw the FPS
         const fpsText = rl.textFormat("Frames/Second: %d", .{rl.getFPS()});
         rl.drawText(fpsText, 10, 50, 20, rl.Color.dark_gray);
+
+        // Show the number of obstacles
+        const obsCountText = rl.textFormat("Obstacles in Memory: %d", .{obstacles.pairs.items.len});
+        rl.drawText(obsCountText, 10, 70, 20, rl.Color.dark_gray);
     }
 
     return false;
 }
 
 // Move all of the Objects
-pub fn move_objects(birdPosition: *rl.Vector2, obstacles: *[5]obs.ObstaclePair, camera: *rl.Camera2D, key_pressed: bool) void {
+pub fn move_objects(birdPosition: *rl.Vector2, obstacles: *obs.Obstacles, camera: *rl.Camera2D, key_pressed: bool) void {
     // Move the Bird
     birdPosition.y += fallRate;
 
     // Move the Columns
-    for (obstacles) |*pair| {
+    for (obstacles.pairs.items) |*pair| {
         pair.move_left(scrollRate);
     }
 
