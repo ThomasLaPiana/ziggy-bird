@@ -4,42 +4,42 @@ const obs = @import("obstacles.zig");
 const rl = @import("raylib");
 
 // Set all of the Game constants
-const birdSize: i16 = 50;
+const bird_size: i16 = 50;
 const fps: i32 = 120;
-const screenWidth: i32 = 1000;
-const centerX: f32 = screenWidth / 2;
-const centerY: f32 = screenHeight / 2;
-const screenHeight: i32 = 700;
-const fallRate: f32 = 1.0;
-const scrollRate: f32 = 2.0;
+const screen_width: i32 = 1000;
+const screen_height: i32 = 700;
+const center_x: f32 = screen_width / 2;
+const center_y: f32 = screen_height / 2;
+const fall_rate: f32 = 1.0;
+const scroll_rate: f32 = 2.0;
 
 pub fn run_game() bool {
     const allocator = std.heap.page_allocator;
 
     // Start the Game Window
-    rl.initWindow(screenWidth, screenHeight, "Ziggy Bird");
+    rl.initWindow(screen_width, screen_height, "Ziggy Bird");
     defer rl.closeWindow();
     rl.setTargetFPS(fps);
 
     // Create the Bird
-    var birdPosition = rl.Vector2.init(screenWidth / 2, screenHeight / 2);
+    var birdPosition = rl.Vector2.init(screen_width / 2, screen_height / 2);
     var gameLost = false;
 
     // Create the Obstacles
-    var obstacles = obs.Obstacles.init(screenWidth, screenHeight, allocator);
-    obstacles.add_obstacle_pair();
+    var obstacles = obs.Obstacles.init(screen_width, screen_height, allocator);
+    obstacles.addObstaclePair();
 
     // Create the Camera
     var camera = rl.Camera2D{
         .target = rl.Vector2.init(birdPosition.x + 20, birdPosition.y + 20),
-        .offset = rl.Vector2.init(screenWidth / 2, screenHeight / 2),
+        .offset = rl.Vector2.init(screen_width / 2, screen_height / 2),
         .rotation = 0,
         .zoom = 1,
     };
 
     // Init Stats
     var score: i32 = 0;
-    var elapsedTime: f64 = 0.0;
+    var elapsed_time: f64 = 0.0;
 
     // Main game loop
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
@@ -55,13 +55,13 @@ pub fn run_game() bool {
         rl.clearBackground(rl.Color.ray_white);
 
         // Check if we need to add a new obstacle pair
-        if (obstacles.pairs.getLast().top.x < screenWidth - obs.obstacle_offset) {
-            obstacles.add_obstacle_pair();
+        if (obstacles.pairs.getLast().top.x < screen_width - obs.obstacle_offset) {
+            obstacles.addObstaclePair();
         }
 
         // Check if we need to remove the first obstacle pair
         if (obstacles.pairs.items[0].top.x < -20) {
-            obstacles.remove_first_obstacle_pair();
+            obstacles.removeFirstObstaclePair();
         }
 
         // Camera Work + Drawing
@@ -70,7 +70,7 @@ pub fn run_game() bool {
             defer camera.end();
 
             // Draw the bird
-            rl.drawCircleV(birdPosition, birdSize, rl.Color.maroon);
+            rl.drawCircleV(birdPosition, bird_size, rl.Color.maroon);
 
             // Draw the obstacles
             for (obstacles.pairs.items) |pair| {
@@ -80,29 +80,29 @@ pub fn run_game() bool {
         }
 
         // Check for upper & lower window collision
-        const upperCollision = rl.checkCollisionPointCircle(rl.Vector2{ .x = centerX, .y = 0 }, birdPosition, birdSize);
-        const lowerCollision = rl.checkCollisionPointCircle(rl.Vector2{ .x = centerX, .y = screenHeight }, birdPosition, birdSize);
-        if (upperCollision or lowerCollision) {
+        const upper_collision = rl.checkCollisionPointCircle(rl.Vector2{ .x = center_x, .y = 0 }, birdPosition, bird_size);
+        const lower_collision = rl.checkCollisionPointCircle(rl.Vector2{ .x = center_x, .y = screen_height }, birdPosition, bird_size);
+        if (upper_collision or lower_collision) {
             gameLost = true;
         }
 
         // Calculate score and collisions
         for (obstacles.pairs.items) |pair| {
-            const topCollision = rl.checkCollisionCircleRec(birdPosition, birdSize, pair.top);
-            const bottomCollision = rl.checkCollisionCircleRec(birdPosition, birdSize, pair.bottom);
-            if (topCollision or bottomCollision) {
+            const top_collision = rl.checkCollisionCircleRec(birdPosition, bird_size, pair.top);
+            const bottom_collision = rl.checkCollisionCircleRec(birdPosition, bird_size, pair.bottom);
+            if (top_collision or bottom_collision) {
                 gameLost = true;
                 continue;
             }
 
-            if (pair.top.x == screenWidth / 2) {
+            if (pair.top.x == screen_width / 2) {
                 score += 1;
             }
         }
 
         if (gameLost) {
-            rl.drawText("Game Over!", screenWidth / 2 - 100, screenHeight / 2, 20, rl.Color.black);
-            rl.drawText("Press 'r' to restart or 'x' to exit!", screenWidth / 2 - 100, screenHeight / 2 + 30, 20, rl.Color.black);
+            rl.drawText("Game Over!", screen_width / 2 - 100, screen_height / 2, 20, rl.Color.black);
+            rl.drawText("Press 'r' to restart or 'x' to exit!", screen_width / 2 - 100, screen_height / 2 + 30, 20, rl.Color.black);
 
             if (rl.isKeyPressed(rl.KeyboardKey.key_r)) {
                 return true;
@@ -110,7 +110,7 @@ pub fn run_game() bool {
                 return false;
             }
         } else {
-            elapsedTime = rl.getTime();
+            elapsed_time = rl.getTime();
         }
 
         // Draw the Score
@@ -118,7 +118,7 @@ pub fn run_game() bool {
         rl.drawText(scoreText, 10, 10, 20, rl.Color.dark_gray);
 
         // Draw the Time
-        const timeText = rl.textFormat("Elapsed Time: %f", .{elapsedTime});
+        const timeText = rl.textFormat("Elapsed Time: %f", .{elapsed_time});
         rl.drawText(timeText, 10, 30, 20, rl.Color.dark_gray);
 
         // Draw the FPS
@@ -134,19 +134,19 @@ pub fn run_game() bool {
 }
 
 // Move all of the Objects
-pub fn move_objects(birdPosition: *rl.Vector2, obstacles: *obs.Obstacles, camera: *rl.Camera2D, key_pressed: bool) void {
+pub fn move_objects(bird_position: *rl.Vector2, obstacles: *obs.Obstacles, camera: *rl.Camera2D, key_pressed: bool) void {
     // Move the Bird
-    birdPosition.y += fallRate;
+    bird_position.y += fall_rate;
 
     // Move the Columns
     for (obstacles.pairs.items) |*pair| {
-        pair.move_left(scrollRate);
+        pair.moveLeft(scroll_rate);
     }
 
     // Update the camera
-    camera.target = rl.Vector2.init(birdPosition.x + 20, screenHeight / 2);
+    camera.target = rl.Vector2.init(bird_position.x + 20, screen_height / 2);
 
     if (key_pressed) {
-        birdPosition.y -= 50.0;
+        bird_position.y -= 50.0;
     }
 }

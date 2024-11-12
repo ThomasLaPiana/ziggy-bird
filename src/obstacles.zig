@@ -16,7 +16,7 @@ pub const Obstacles = struct {
     }
 
     // Get a pair of obstacles with a gap in the middle
-    pub fn add_obstacle_pair(self: *Obstacles) void {
+    pub fn addObstaclePair(self: *Obstacles) void {
         // Calculate the gap and heights
         const gap_size: i32 = 100;
         const random: f32 = @floatFromInt(rl.getRandomValue(-100, 100));
@@ -31,7 +31,7 @@ pub const Obstacles = struct {
         self.pairs.append(pair) catch unreachable;
     }
 
-    pub fn remove_first_obstacle_pair(self: *Obstacles) void {
+    pub fn removeFirstObstaclePair(self: *Obstacles) void {
         _ = self.pairs.orderedRemove(0);
     }
 };
@@ -41,7 +41,7 @@ pub const ObstaclePair = struct {
     top: rl.Rectangle,
     bottom: rl.Rectangle,
 
-    pub fn move_left(self: *ObstaclePair, amount: f32) void {
+    pub fn moveLeft(self: *ObstaclePair, amount: f32) void {
         self.top.x -= amount;
         self.bottom.x -= amount;
     }
