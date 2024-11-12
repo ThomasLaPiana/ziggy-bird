@@ -29,14 +29,6 @@ pub fn run_game() bool {
     var obstacles = obs.Obstacles.init(screen_width, screen_height, allocator);
     obstacles.addObstaclePair();
 
-    // Create the Camera
-    var camera = rl.Camera2D{
-        .target = rl.Vector2.init(birdPosition.x + 20, birdPosition.y + 20),
-        .offset = rl.Vector2.init(screen_width / 2, screen_height / 2),
-        .rotation = 0,
-        .zoom = 1,
-    };
-
     // Init Stats
     var score: i32 = 0;
     var elapsed_time: f64 = 0.0;
@@ -46,7 +38,7 @@ pub fn run_game() bool {
 
         if (!gameLost) {
             const key_pressed = rl.isKeyPressed(rl.KeyboardKey.key_k);
-            move_objects(&birdPosition, &obstacles, &camera, key_pressed);
+            move_objects(&birdPosition, &obstacles, key_pressed);
         }
 
         rl.beginDrawing();
@@ -64,19 +56,13 @@ pub fn run_game() bool {
             obstacles.removeFirstObstaclePair();
         }
 
-        // Camera Work + Drawing
-        {
-            camera.begin();
-            defer camera.end();
+        // Draw the bird
+        rl.drawCircleV(birdPosition, bird_size, rl.Color.maroon);
 
-            // Draw the bird
-            rl.drawCircleV(birdPosition, bird_size, rl.Color.maroon);
-
-            // Draw the obstacles
-            for (obstacles.pairs.items) |pair| {
-                rl.drawRectangleRec(pair.top, rl.Color.dark_blue);
-                rl.drawRectangleRec(pair.bottom, rl.Color.dark_blue);
-            }
+        // Draw the obstacles
+        for (obstacles.pairs.items) |pair| {
+            rl.drawRectangleRec(pair.top, rl.Color.dark_blue);
+            rl.drawRectangleRec(pair.bottom, rl.Color.dark_blue);
         }
 
         // Check for upper & lower window collision
@@ -134,7 +120,7 @@ pub fn run_game() bool {
 }
 
 // Move all of the Objects
-pub fn move_objects(bird_position: *rl.Vector2, obstacles: *obs.Obstacles, camera: *rl.Camera2D, key_pressed: bool) void {
+pub fn move_objects(bird_position: *rl.Vector2, obstacles: *obs.Obstacles, key_pressed: bool) void {
     // Move the Bird
     bird_position.y += fall_rate;
 
@@ -142,9 +128,6 @@ pub fn move_objects(bird_position: *rl.Vector2, obstacles: *obs.Obstacles, camer
     for (obstacles.pairs.items) |*pair| {
         pair.moveLeft(scroll_rate);
     }
-
-    // Update the camera
-    camera.target = rl.Vector2.init(bird_position.x + 20, screen_height / 2);
 
     if (key_pressed) {
         bird_position.y -= 50.0;
