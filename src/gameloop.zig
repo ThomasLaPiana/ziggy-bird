@@ -24,6 +24,7 @@ pub fn run_game() bool {
     // Create the Bird
     var birdPosition = rl.Vector2.init(screen_width / 2, screen_height / 2);
     var gameLost = false;
+    var gameWon = false;
 
     // Create the Obstacles
     var obstacles = obs.Obstacles.init(screen_width, screen_height, allocator);
@@ -35,8 +36,12 @@ pub fn run_game() bool {
 
     // Main game loop
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
+        if (score == 10) {
+            gameWon = true;
+        }
+        const gameOn = !gameLost and !gameWon;
 
-        if (!gameLost) {
+        if (gameOn) {
             const key_pressed = rl.isKeyPressed(rl.KeyboardKey.key_k);
             move_objects(&birdPosition, &obstacles, key_pressed);
         }
@@ -81,7 +86,7 @@ pub fn run_game() bool {
                 continue;
             }
 
-            if (pair.top.x == screen_width / 2) {
+            if (pair.top.x == screen_width / 2 and !gameWon) {
                 score += 1;
             }
         }
@@ -95,6 +100,8 @@ pub fn run_game() bool {
             } else if (rl.isKeyPressed(rl.KeyboardKey.key_x)) {
                 return false;
             }
+        } else if (gameWon) {
+            rl.drawText("Congratulations, You Won!", screen_width / 2 - 100, screen_height / 2, 20, rl.Color.black);
         } else {
             elapsed_time = rl.getTime();
         }
