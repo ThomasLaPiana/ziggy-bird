@@ -93,15 +93,22 @@ pub fn run_game() bool {
 
         if (gameLost) {
             rl.drawText("Game Over!", screen_width / 2 - 100, screen_height / 2, 20, rl.Color.black);
-            rl.drawText("Press 'r' to restart or 'x' to exit!", screen_width / 2 - 100, screen_height / 2 + 30, 20, rl.Color.black);
+            rl.drawText("Press 'r' or 'j' to restart or 'x' to exit!", screen_width / 2 - 100, screen_height / 2 + 30, 20, rl.Color.black);
 
-            if (rl.isKeyPressed(rl.KeyboardKey.key_r)) {
+            if (rl.isKeyPressed(rl.KeyboardKey.key_r) or rl.isKeyPressed(rl.KeyboardKey.key_j)) {
                 return true;
             } else if (rl.isKeyPressed(rl.KeyboardKey.key_x)) {
                 return false;
             }
         } else if (gameWon) {
             rl.drawText("Congratulations, You Won!", screen_width / 2 - 100, screen_height / 2, 20, rl.Color.black);
+            rl.drawText("Press 'r' or 'j' to restart or 'x' to exit!", screen_width / 2 - 100, screen_height / 2 + 30, 20, rl.Color.black);
+
+            if (rl.isKeyPressed(rl.KeyboardKey.key_r) or rl.isKeyPressed(rl.KeyboardKey.key_j)) {
+                return true;
+            } else if (rl.isKeyPressed(rl.KeyboardKey.key_x)) {
+                return false;
+            }
         } else {
             elapsed_time = rl.getTime();
         }
